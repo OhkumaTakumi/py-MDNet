@@ -22,7 +22,7 @@ from gen_config import gen_config
 
 opts = yaml.safe_load(open('tracking/options.yaml','r'))
 
-
+#入力画像imageをmodelに通したときout_layerが出力する特徴マップを出力する
 def forward_samples(model, image, samples, out_layer='conv3'):
     model.eval()
     extractor = RegionExtractor(image, samples, opts)
@@ -37,7 +37,7 @@ def forward_samples(model, image, samples, out_layer='conv3'):
             feats = torch.cat((feats, feat.detach().clone()), 0)
     return feats
 
-
+# 各データを用いたモデルの学習に使う
 def train(model, criterion, optimizer, pos_feats, neg_feats, maxiter, in_layer='fc4'):
     model.train()
 
@@ -102,6 +102,7 @@ def train(model, criterion, optimizer, pos_feats, neg_feats, maxiter, in_layer='
         optimizer.step()
 
 
+#トラッキングを動かす関数
 def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
 
     # Init bbox
@@ -117,7 +118,7 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
 
     # Init model
     model = MDNet(opts['model_path'])
-    if opts['use_gpu']:
+    if opts['use_gpu']: #GPUを使うか否か
         model = model.cuda()
 
     # Init criterion and optimizer 
@@ -139,18 +140,18 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
                         target_bbox, int(opts['n_neg_init'] * 0.5), opts['overlap_neg_init']),
                     SampleGenerator('whole', image.size)(
                         target_bbox, int(opts['n_neg_init'] * 0.5), opts['overlap_neg_init'])])
-    neg_examples = np.random.permutation(neg_examples)
+    neg_examples = np.random.permutation(neg_examples) #シャッフルする 
 
-    # Extract pos/neg features
+    # Extract pos/neg features 特徴マップに変換
     pos_feats = forward_samples(model, image, pos_examples)
     neg_feats = forward_samples(model, image, neg_examples)
 
-    # Initial training
+    # Initial training 1フレーム目の訓練
     train(model, criterion, init_optimizer, pos_feats, neg_feats, opts['maxiter_init'])
     del init_optimizer, neg_feats
     torch.cuda.empty_cache()
 
-    # Train bbox regressor
+    # Train bbox regressor ボックス回帰を訓練
     bbreg_examples = SampleGenerator('uniform', image.size, opts['trans_bbreg'], opts['scale_bbreg'], opts['aspect_bbreg'])(
                         target_bbox, opts['n_bbreg'], opts['overlap_bbreg'])
     bbreg_feats = forward_samples(model, image, bbreg_examples)
@@ -160,15 +161,20 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
     torch.cuda.empty_cache()
 
     # Init sample generators for update
+    #候補領域サンプリング器
     sample_generator = SampleGenerator('gaussian', image.size, opts['trans'], opts['scale'])
+    #ポジティブサンプリング器
     pos_generator = SampleGenerator('gaussian', image.size, opts['trans_pos'], opts['scale_pos'])
+    #ネガティブサンプル器
     neg_generator = SampleGenerator('uniform', image.size, opts['trans_neg'], opts['scale_neg'])
 
     # Init pos/neg features for update
+    # 1フレーム目に対応するポジティブネガティブサンプルを保存
     neg_examples = neg_generator(target_bbox, opts['n_neg_update'], opts['overlap_neg_init'])
     neg_feats = forward_samples(model, image, neg_examples)
-    pos_feats_all = [pos_feats]
-    neg_feats_all = [neg_feats]
+    #すべてのサンプルを保存するようの変数
+    pos_feats_all = [pos_feats] #positive dataset
+    neg_feats_all = [neg_feats] #negative dataset
 
     spf_total = time.time() - tic
 
@@ -199,17 +205,18 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
         if savefig:
             fig.savefig(os.path.join(savefig_dir, '0000.jpg'), dpi=dpi)
 
-    # Main loop
+    # Main loop 2フレーム目以降のトラッキング
     for i in range(1, len(img_list)):
 
         tic = time.time()
         # Load image
         image = Image.open(img_list[i]).convert('RGB')
 
-        # Estimate target bbox
+        # Estimate target bbox 256の候補領域
         samples = sample_generator(target_bbox, opts['n_samples'])
         sample_scores = forward_samples(model, image, samples, out_layer='fc6')
-
+        
+        #最も信頼度の高い候補領域（の平均領域）を選択
         top_scores, top_idx = sample_scores[:, 1].topk(5)
         top_idx = top_idx.cpu()
         target_score = top_scores.mean()
@@ -224,7 +231,7 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
         else:
             sample_generator.expand_trans(opts['trans_limit'])
 
-        # Bbox regression
+        # Bbox regression バンディングボックス回帰をする
         if success:
             bbreg_samples = samples[top_idx]
             if top_idx.shape[0] == 1:
@@ -236,8 +243,8 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
             bbreg_bbox = target_bbox
 
         # Save result
-        result[i] = target_bbox
-        result_bb[i] = bbreg_bbox
+        result[i] = target_bbox #回帰前のボックス
+        result_bb[i] = bbreg_bbox #回帰後のボックス
 
         # Data collect
         if success:
@@ -253,14 +260,14 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
             if len(neg_feats_all) > opts['n_frames_short']:
                 del neg_feats_all[0]
 
-        # Short term update
+        # Short term update 検出が上手くいかなかったとき
         if not success:
             nframes = min(opts['n_frames_short'], len(pos_feats_all))
             pos_data = torch.cat(pos_feats_all[-nframes:], 0)
             neg_data = torch.cat(neg_feats_all, 0)
             train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
 
-        # Long term update
+        # Long term update 一定のインターバル
         elif i % opts['long_interval'] == 0:
             pos_data = torch.cat(pos_feats_all, 0)
             neg_data = torch.cat(neg_feats_all, 0)

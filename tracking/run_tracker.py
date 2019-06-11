@@ -22,7 +22,7 @@ from gen_config import gen_config
 
 opts = yaml.safe_load(open('tracking/options.yaml','r'))
 
-#入力画像imageをmodelに通したときout_layerが出力する特徴マップを出力する
+#入力画像imageをmodelに通したとき画像の一部を切り出して、さらにout_layerが出力する特徴マップを出力する
 def forward_samples(model, image, samples, out_layer='conv3'):
     model.eval()
     extractor = RegionExtractor(image, samples, opts)

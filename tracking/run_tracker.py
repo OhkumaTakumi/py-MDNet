@@ -5,7 +5,7 @@ import time
 import argparse
 import yaml, json
 from PIL import Image
-
+import cv2
 import matplotlib.pyplot as plt
 
 import torch
@@ -223,7 +223,7 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
         target_bbox = samples[top_idx]
         if top_idx.shape[0] > 1:
             target_bbox = target_bbox.mean(axis=0)
-        success = target_score > 0
+        success = target_score > 0 # =shreshold
         
         # Expand search area at failure
         if success:
@@ -304,9 +304,21 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
             print('Frame {:d}/{:d}, Overlap {:.3f}, Score {:.3f}, Time {:.3f}'
                 .format(i, len(img_list), overlap[i], target_score, spf))
 
+
     if gt is not None:
         print('meanIOU: {:.3f}'.format(overlap.mean()))
     fps = len(img_list) / spf_total
+
+    if savefig:
+        fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+        video = cv2.VideoWriter(os.path.join(savefig_dir[:-5], 'video.mp4'), fourcc, 5.0, (640, 480))
+        for i in range(1, len(img_list)):
+            img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)))
+            img = cv2.resize(img, (640, 480))
+            video.write(img)
+
+        video.release()
+
     return result, result_bb, fps
 
 
@@ -327,6 +339,9 @@ if __name__ == "__main__":
     # Generate sequence config
     img_list, init_bbox, gt, savefig_dir, display, result_path = gen_config(args)
 
+
+    # "gt" is grand truth
+
     # Run tracker
     result, result_bb, fps = run_mdnet(img_list, init_bbox, gt=gt, savefig_dir=savefig_dir, display=display)
 
@@ -336,3 +351,4 @@ if __name__ == "__main__":
     res['type'] = 'rect'
     res['fps'] = fps
     json.dump(res, open(result_path, 'w'), indent=2)
+

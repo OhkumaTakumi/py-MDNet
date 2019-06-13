@@ -311,6 +311,7 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
 
     if savefig:
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+        img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(0)))
         video = cv2.VideoWriter(os.path.join(savefig_dir[:-5], 'video.mp4'), fourcc, 5.0, (640, 480))
         for i in range(1, len(img_list)):
             img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)))

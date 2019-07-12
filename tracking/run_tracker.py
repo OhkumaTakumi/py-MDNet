@@ -22,6 +22,7 @@ from gen_config import gen_config
 
 opts = yaml.safe_load(open('tracking/options.yaml','r'))
 
+
 #入力画像imageをmodelに通したとき画像の一部を切り出して、さらにout_layerが出力する特徴マップを出力する
 def forward_samples(model, image, samples, out_layer='conv3'):
     model.eval()
@@ -103,7 +104,7 @@ def train(model, criterion, optimizer, pos_feats, neg_feats, maxiter, in_layer='
 
 
 #トラッキングを動かす関数
-def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
+def run_mdnet(args, img_list, init_bbox, first_frame = 0, gt=None, savefig_dir='', display=False):
 
     # Init bbox
     target_bbox = np.array(init_bbox)
@@ -129,7 +130,12 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
 
     tic = time.time()
     # Load first image
-    image = Image.open(img_list[0]).convert('RGB')
+    if not args.video_based:
+        image = Image.open(img_list[first_frame]).convert('RGB')
+    else:
+        image = img_list[first_frame]
+        image = Image.fromarray(np.uint8(image))
+
 
     # Draw pos/neg samples
     pos_examples = SampleGenerator('gaussian', image.size, opts['trans_pos'], opts['scale_pos'])(
@@ -195,7 +201,7 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
                                     linewidth=3, edgecolor="#00ff00", zorder=1, fill=False)
             ax.add_patch(gt_rect)
 
-        rect = plt.Rectangle(tuple(result_bb[0, :2]), result_bb[0, 2], result_bb[0, 3],
+        rect = plt.Rectangle(tuple(result_bb[first_frame, :2]), result_bb[first_frame, 2], result_bb[first_frame, 3],
                              linewidth=3, edgecolor="#ff0000", zorder=1, fill=False)
         ax.add_patch(rect)
 
@@ -203,106 +209,218 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
             plt.pause(.01)
             plt.draw()
         if savefig:
-            fig.savefig(os.path.join(savefig_dir, '0000.jpg'), dpi=dpi)
+            fig.savefig(os.path.join(savefig_dir, '{:04d}.jpg'.format(first_frame)), dpi=dpi)
 
-    # Main loop 2フレーム目以降のトラッキング
-    for i in range(1, len(img_list)):
+    # Main loop forwardトラッキング
+    if first_frame != len(img_list) - 1:
+        for i in range(first_frame + 1, len(img_list)):
 
-        tic = time.time()
-        # Load image
-        image = Image.open(img_list[i]).convert('RGB')
+            tic = time.time()
 
-        # Estimate target bbox 256の候補領域
-        samples = sample_generator(target_bbox, opts['n_samples'])
-        sample_scores = forward_samples(model, image, samples, out_layer='fc6')
-        
-        #最も信頼度の高い候補領域（の平均領域）を選択
-        top_scores, top_idx = sample_scores[:, 1].topk(5)
-        top_idx = top_idx.cpu()
-        target_score = top_scores.mean()
-        target_bbox = samples[top_idx]
-        if top_idx.shape[0] > 1:
-            target_bbox = target_bbox.mean(axis=0)
-        success = target_score > 0 # =shreshold
-        
-        # Expand search area at failure
-        if success:
-            sample_generator.set_trans(opts['trans'])
-        else:
-            sample_generator.expand_trans(opts['trans_limit'])
+            # load image
+            if not args.video_based:
+                image = Image.open(img_list[i]).convert('RGB')
+            else:
+                image = img_list[i]
+                image = Image.fromarray(np.uint8(image))
 
-        # Bbox regression バンディングボックス回帰をする
-        if success:
-            bbreg_samples = samples[top_idx]
-            if top_idx.shape[0] == 1:
-                bbreg_samples = bbreg_samples[None,:]
-            bbreg_feats = forward_samples(model, image, bbreg_samples)
-            bbreg_samples = bbreg.predict(bbreg_feats, bbreg_samples)
-            bbreg_bbox = bbreg_samples.mean(axis=0)
-        else:
-            bbreg_bbox = target_bbox
+            # Estimate target bbox 256の候補領域
+            samples = sample_generator(target_bbox, opts['n_samples'])
+            sample_scores = forward_samples(model, image, samples, out_layer='fc6')
 
-        # Save result
-        result[i] = target_bbox #回帰前のボックス
-        result_bb[i] = bbreg_bbox #回帰後のボックス
+            # 最も信頼度の高い候補領域（の平均領域）を選択
+            top_scores, top_idx = sample_scores[:, 1].topk(5)
+            top_idx = top_idx.cpu()
+            target_score = top_scores.mean()
+            target_bbox = samples[top_idx]
+            if top_idx.shape[0] > 1:
+                target_bbox = target_bbox.mean(axis=0)
+            success = target_score > 0  # =shreshold
 
-        # Data collect
-        if success:
-            pos_examples = pos_generator(target_bbox, opts['n_pos_update'], opts['overlap_pos_update'])
-            pos_feats = forward_samples(model, image, pos_examples)
-            pos_feats_all.append(pos_feats)
-            if len(pos_feats_all) > opts['n_frames_long']:
-                del pos_feats_all[0]
+            # Expand search area at failure
+            if success:
+                sample_generator.set_trans(opts['trans'])
+            else:
+                sample_generator.expand_trans(opts['trans_limit'])
 
-            neg_examples = neg_generator(target_bbox, opts['n_neg_update'], opts['overlap_neg_update'])
-            neg_feats = forward_samples(model, image, neg_examples)
-            neg_feats_all.append(neg_feats)
-            if len(neg_feats_all) > opts['n_frames_short']:
-                del neg_feats_all[0]
+            # Bbox regression バンディングボックス回帰をする
+            if success:
+                bbreg_samples = samples[top_idx]
+                if top_idx.shape[0] == 1:
+                    bbreg_samples = bbreg_samples[None, :]
+                bbreg_feats = forward_samples(model, image, bbreg_samples)
+                bbreg_samples = bbreg.predict(bbreg_feats, bbreg_samples)
+                bbreg_bbox = bbreg_samples.mean(axis=0)
+            else:
+                bbreg_bbox = target_bbox
 
-        # Short term update 検出が上手くいかなかったとき
-        if not success:
-            nframes = min(opts['n_frames_short'], len(pos_feats_all))
-            pos_data = torch.cat(pos_feats_all[-nframes:], 0)
-            neg_data = torch.cat(neg_feats_all, 0)
-            train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
+            # Save result
+            result[i] = target_bbox  # 回帰前のボックス
+            result_bb[i] = bbreg_bbox  # 回帰後のボックス
 
-        # Long term update 一定のインターバル
-        elif i % opts['long_interval'] == 0:
-            pos_data = torch.cat(pos_feats_all, 0)
-            neg_data = torch.cat(neg_feats_all, 0)
-            train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
+            # Data collect
+            if success:
+                pos_examples = pos_generator(target_bbox, opts['n_pos_update'], opts['overlap_pos_update'])
+                pos_feats = forward_samples(model, image, pos_examples)
+                pos_feats_all.append(pos_feats)
+                if len(pos_feats_all) > opts['n_frames_long']:
+                    del pos_feats_all[0]
 
-        torch.cuda.empty_cache()
-        spf = time.time() - tic
-        spf_total += spf
+                neg_examples = neg_generator(target_bbox, opts['n_neg_update'], opts['overlap_neg_update'])
+                neg_feats = forward_samples(model, image, neg_examples)
+                neg_feats_all.append(neg_feats)
+                if len(neg_feats_all) > opts['n_frames_short']:
+                    del neg_feats_all[0]
 
-        # Display
-        if display or savefig:
-            im.set_data(image)
+            # Short term update 検出が上手くいかなかったとき
+            if not success:
+                nframes = min(opts['n_frames_short'], len(pos_feats_all))
+                pos_data = torch.cat(pos_feats_all[-nframes:], 0)
+                neg_data = torch.cat(neg_feats_all, 0)
+                train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
 
-            if gt is not None:
-                gt_rect.set_xy(gt[i, :2])
-                gt_rect.set_width(gt[i, 2])
-                gt_rect.set_height(gt[i, 3])
+            # Long term update 一定のインターバル
+            elif i % opts['long_interval'] == 0:
+                pos_data = torch.cat(pos_feats_all, 0)
+                neg_data = torch.cat(neg_feats_all, 0)
+                train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
 
-            rect.set_xy(result_bb[i, :2])
-            rect.set_width(result_bb[i, 2])
-            rect.set_height(result_bb[i, 3])
+            torch.cuda.empty_cache()
+            spf = time.time() - tic
+            spf_total += spf
 
-            if display:
-                plt.pause(.01)
-                plt.draw()
-            if savefig:
-                fig.savefig(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)), dpi=dpi)
+            # Display
+            if display or savefig:
+                im.set_data(image)
 
-        if gt is None:
-            print('Frame {:d}/{:d}, Score {:.3f}, Time {:.3f}'
-                .format(i, len(img_list), target_score, spf))
-        else:
-            overlap[i] = overlap_ratio(gt[i], result_bb[i])[0]
-            print('Frame {:d}/{:d}, Overlap {:.3f}, Score {:.3f}, Time {:.3f}'
-                .format(i, len(img_list), overlap[i], target_score, spf))
+                if gt is not None:
+                    gt_rect.set_xy(gt[i, :2])
+                    gt_rect.set_width(gt[i, 2])
+                    gt_rect.set_height(gt[i, 3])
+
+                rect.set_xy(result_bb[i, :2])
+                rect.set_width(result_bb[i, 2])
+                rect.set_height(result_bb[i, 3])
+
+                if display:
+                    plt.pause(.01)
+                    plt.draw()
+                if savefig:
+                    fig.savefig(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)), dpi=dpi)
+
+            if gt is None:
+                print('Frame {:d}/{:d}, Score {:.3f}, Time {:.3f}'
+                      .format(i, len(img_list), target_score, spf))
+            else:
+                overlap[i] = overlap_ratio(gt[i], result_bb[i])[0]
+                print('Frame {:d}/{:d}, Overlap {:.3f}, Score {:.3f}, Time {:.3f}'
+                      .format(i, len(img_list), overlap[i], target_score, spf))
+
+
+    # Main loop backトラッキング
+    if first_frame != 0:
+        for i in range(first_frame - 1, -1, -1):
+
+            tic = time.time()
+
+            # load image
+            if not args.video_based:
+                image = Image.open(img_list[i]).convert('RGB')
+            else:
+                image = img_list[i]
+                image = Image.fromarray(np.uint8(image))
+
+            # Estimate target bbox 256の候補領域
+            samples = sample_generator(target_bbox, opts['n_samples'])
+            sample_scores = forward_samples(model, image, samples, out_layer='fc6')
+
+            # 最も信頼度の高い候補領域（の平均領域）を選択
+            top_scores, top_idx = sample_scores[:, 1].topk(5)
+            top_idx = top_idx.cpu()
+            target_score = top_scores.mean()
+            target_bbox = samples[top_idx]
+            if top_idx.shape[0] > 1:
+                target_bbox = target_bbox.mean(axis=0)
+            success = target_score > 0  # =shreshold
+
+            # Expand search area at failure
+            if success:
+                sample_generator.set_trans(opts['trans'])
+            else:
+                sample_generator.expand_trans(opts['trans_limit'])
+
+            # Bbox regression バンディングボックス回帰をする
+            if success:
+                bbreg_samples = samples[top_idx]
+                if top_idx.shape[0] == 1:
+                    bbreg_samples = bbreg_samples[None, :]
+                bbreg_feats = forward_samples(model, image, bbreg_samples)
+                bbreg_samples = bbreg.predict(bbreg_feats, bbreg_samples)
+                bbreg_bbox = bbreg_samples.mean(axis=0)
+            else:
+                bbreg_bbox = target_bbox
+
+            # Save result
+            result[i] = target_bbox  # 回帰前のボックス
+            result_bb[i] = bbreg_bbox  # 回帰後のボックス
+
+            # Data collect
+            if success:
+                pos_examples = pos_generator(target_bbox, opts['n_pos_update'], opts['overlap_pos_update'])
+                pos_feats = forward_samples(model, image, pos_examples)
+                pos_feats_all.append(pos_feats)
+                if len(pos_feats_all) > opts['n_frames_long']:
+                    del pos_feats_all[0]
+
+                neg_examples = neg_generator(target_bbox, opts['n_neg_update'], opts['overlap_neg_update'])
+                neg_feats = forward_samples(model, image, neg_examples)
+                neg_feats_all.append(neg_feats)
+                if len(neg_feats_all) > opts['n_frames_short']:
+                    del neg_feats_all[0]
+
+            # Short term update 検出が上手くいかなかったとき
+            if not success:
+                nframes = min(opts['n_frames_short'], len(pos_feats_all))
+                pos_data = torch.cat(pos_feats_all[-nframes:], 0)
+                neg_data = torch.cat(neg_feats_all, 0)
+                train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
+
+            # Long term update 一定のインターバル
+            elif i % opts['long_interval'] == 0:
+                pos_data = torch.cat(pos_feats_all, 0)
+                neg_data = torch.cat(neg_feats_all, 0)
+                train(model, criterion, update_optimizer, pos_data, neg_data, opts['maxiter_update'])
+
+            torch.cuda.empty_cache()
+            spf = time.time() - tic
+            spf_total += spf
+
+            # Display
+            if display or savefig:
+                im.set_data(image)
+
+                if gt is not None:
+                    gt_rect.set_xy(gt[i, :2])
+                    gt_rect.set_width(gt[i, 2])
+                    gt_rect.set_height(gt[i, 3])
+
+                rect.set_xy(result_bb[i, :2])
+                rect.set_width(result_bb[i, 2])
+                rect.set_height(result_bb[i, 3])
+
+                if display:
+                    plt.pause(.01)
+                    plt.draw()
+                if savefig:
+                    fig.savefig(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)), dpi=dpi)
+
+            if gt is None:
+                print('Frame {:d}/{:d}, Score {:.3f}, Time {:.3f}'
+                      .format(i, len(img_list), target_score, spf))
+            else:
+                overlap[i] = overlap_ratio(gt[i], result_bb[i])[0]
+                print('Frame {:d}/{:d}, Overlap {:.3f}, Score {:.3f}, Time {:.3f}'
+                      .format(i, len(img_list), overlap[i], target_score, spf))
 
 
     if gt is not None:
@@ -311,14 +429,24 @@ def run_mdnet(img_list, init_bbox, gt=None, savefig_dir='', display=False):
 
     if savefig:
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-        img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(0)))
-        video = cv2.VideoWriter(os.path.join(savefig_dir[:-5], 'video.mp4'), fourcc, 5.0, (640, 480))
-        for i in range(1, len(img_list)):
+        img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(first_frame)))
+        video = cv2.VideoWriter(os.path.join(savefig_dir[:-5], 'video_forward.mp4'), fourcc, 30.0, (640, 480))
+        for i in range(first_frame, len(img_list)):
             img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)))
             img = cv2.resize(img, (640, 480))
             video.write(img)
-
         video.release()
+
+        fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+        img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(first_frame)))
+        video = cv2.VideoWriter(os.path.join(savefig_dir[:-5], 'video_back.mp4'), fourcc, 30.0, (640, 480))
+        for i in range(first_frame, 0, -1):
+            img = cv2.imread(os.path.join(savefig_dir, '{:04d}.jpg'.format(i)))
+            img = cv2.resize(img, (640, 480))
+            video.write(img)
+        video.release()
+
+
 
     return result, result_bb, fps
 
@@ -330,26 +458,66 @@ if __name__ == "__main__":
     parser.add_argument('-j', '--json', default='', help='input json')
     parser.add_argument('-f', '--savefig', action='store_true')
     parser.add_argument('-d', '--display', action='store_true')
+    parser.add_argument('--gt', default=True, help='use grand truth')
+    parser.add_argument('-v', '--video_based', default=False, help='flame make from video')
+    parser.add_argument('--home', default='datasets/OTB', help='dataset dir')
 
     args = parser.parse_args()
-    assert args.seq != '' or args.json != ''
+    #assert args.seq != '' or args.json != ''
 
     np.random.seed(0)
     torch.manual_seed(0)
+    if args.video_based:
+        args.gt = False
+        for class_num in range(1, 24):
+            for i in range(1):
+                if class_num != 5:
+                    continue
+                path1 = "/home/takumi/data/YouTube-BB"
+                path_classfolder = "/home/takumi/data/YouTube-BB/videos/{0}".format(class_num)
+                args.home = path_classfolder
 
-    # Generate sequence config
-    img_list, init_bbox, gt, savefig_dir, display, result_path = gen_config(args)
+                video_list = os.listdir(path_classfolder)
+                if len(video_list) > i:
+                    video = video_list[i]
+                    args.seq = video
+
+                    path_video = "/videos/{0}/".format(class_num) + video
+                    path_result = "/detection_result/{0}/".format(class_num) + video[:-4]
+                    # hyouzi(class_num, path1, path_result)
 
 
-    # "gt" is grand truth
+                    # Generate sequence config
+                    img_list, init_bbox, gt, savefig_dir, display, result_path, first_frame = gen_config(args, path1 + path_result)
 
-    # Run tracker
-    result, result_bb, fps = run_mdnet(img_list, init_bbox, gt=gt, savefig_dir=savefig_dir, display=display)
+                    # "gt" is grand truth
+                    print(class_num, i, args.seq)
 
-    # Save result
-    res = {}
-    res['res'] = result_bb.round().tolist()
-    res['type'] = 'rect'
-    res['fps'] = fps
-    json.dump(res, open(result_path, 'w'), indent=2)
+                    # Run tracker
+                    result, result_bb, fps = run_mdnet(args, img_list, init_bbox, first_frame = first_frame, gt=gt, savefig_dir=savefig_dir,
+                                                       display=display)
+
+                    # Save result
+                    res = {}
+                    res['res'] = result_bb.round().tolist()
+                    res['type'] = 'rect'
+                    res['fps'] = fps
+                    json.dump(res, open(result_path, 'w'), indent=2)
+
+    else:
+        # Generate sequence config
+        img_list, init_bbox, gt, savefig_dir, display, result_path, first_frame = gen_config(args)
+
+        # "gt" is grand truth
+
+        # Run tracker
+        result, result_bb, fps = run_mdnet(args, img_list, init_bbox, first_frame = first_frame, gt=gt, savefig_dir=savefig_dir, display=display)
+
+        # Save result
+        res = {}
+        res['res'] = result_bb.round().tolist()
+        res['type'] = 'rect'
+        res['fps'] = fps
+        json.dump(res, open(result_path, 'w'), indent=2)
+
 

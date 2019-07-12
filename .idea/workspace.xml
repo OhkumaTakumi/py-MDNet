@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="51612bfd-2776-405f-bcea-98f6083b4a3c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tracking/gen_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/tracking/gen_config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tracking/run_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/tracking/run_tracker.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,12 +17,19 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tracking/run_tracker.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="316" column="79" selection-start-line="316" selection-start-column="79" selection-end-line="316" selection-end-column="79" />
+            <state relative-caret-position="441">
+              <caret line="447" selection-start-line="447" selection-end-line="447" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/results/JraRkiPqRVk+5+1.mp4/result.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-14085" />
           </provider>
         </entry>
       </file>
@@ -29,11 +38,18 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>imresize</find>
-      <find>target</find>
       <find>display</find>
       <find>fc6</find>
       <find>fig.</find>
       <find>save</find>
+      <find>gt_</find>
+      <find>result</find>
+      <find>savefig</find>
+      <find>json</find>
+      <find>result_bb</find>
+      <find>target</find>
+      <find>spf_total</find>
+      <find>fourcc</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -46,22 +62,22 @@
         <option value="$PROJECT_DIR$/scratch.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py" />
+        <option value="$PROJECT_DIR$/tracking/gen_config.py" />
         <option value="$PROJECT_DIR$/tracking/run_tracker.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-63" />
-    <option name="y" value="301" />
-    <option name="width" value="1400" />
-    <option name="height" value="1000" />
+    <option name="x" value="67" />
+    <option name="y" value="27" />
+    <option name="width" value="927" />
+    <option name="height" value="1053" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -83,21 +99,33 @@
             <path>
               <item name="py-MDNet" type="b2602c69:ProjectViewProjectNode" />
               <item name="py-MDNet" type="462c0819:PsiDirectoryNode" />
+              <item name="modules" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="py-MDNet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="py-MDNet" type="462c0819:PsiDirectoryNode" />
               <item name="results" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="py-MDNet" type="b2602c69:ProjectViewProjectNode" />
               <item name="py-MDNet" type="462c0819:PsiDirectoryNode" />
               <item name="results" type="462c0819:PsiDirectoryNode" />
-              <item name="Basketball" type="462c0819:PsiDirectoryNode" />
+              <item name="JraRkiPqRVk+5+1.mp4" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="py-MDNet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="py-MDNet" type="462c0819:PsiDirectoryNode" />
+              <item name="tracking" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
@@ -118,7 +146,28 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.scratch_1">
+  <component name="RunManager" selected="Python.gen_config">
+    <configuration name="gen_config" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="py-MDNet" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tracking" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tracking/gen_config.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="scratch (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="py-MDNet" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -184,6 +233,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.gen_config" />
         <item itemvalue="Python.scratch_1" />
         <item itemvalue="Python.scratch (1)" />
         <item itemvalue="Python.scratch" />
@@ -203,10 +253,19 @@
     </task>
     <servers />
   </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18981738" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19867183" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -215,7 +274,7 @@
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32937366" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32937366" />
       <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" />
       <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.3088553" />
@@ -249,88 +308,6 @@
     </layout-to-restore>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/explain.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="120">
-            <caret line="8" column="9" selection-start-line="8" selection-start-column="9" selection-end-line="8" selection-end-column="9" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scratch.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" selection-start-line="3" selection-end-line="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tracking/options.yaml">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="10" lean-forward="true" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/datasets/OTB/DragonBaby/cfg.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/datasets/OTB/DragonBaby/img/0014.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/datasets/OTB/DragonBaby/img/0001.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/modules/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1327" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tracking/gen_config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="28" column="12" selection-start-line="28" selection-start-column="8" selection-end-line="28" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/modules/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="186">
-          <caret line="112" column="62" selection-start-line="112" selection-start-column="59" selection-end-line="112" selection-end-column="62" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/matplotlib/backends/backend_gtk3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="196">
-          <caret line="196" selection-start-line="196" selection-end-line="196" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/results/DragonBaby/figs/0001.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/results/DragonBaby/figs/0000.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/results/DragonBaby/figs/0014.jpg">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -400,10 +377,136 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Car1/img/1015.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Car1/img/0709.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Car1/img/0409.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Car1/img/0130.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Car1/img/0001.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Car1/groundtruth_rect.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="30" column="10" selection-start-line="30" selection-start-column="10" selection-end-line="30" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Basketball/img/0007.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/Basketball/figs/0000.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tracking/options.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-102" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/DragonBaby/img/0001.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/datasets/OTB/Basketball/groundtruth_rect.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2490">
+          <caret line="166" column="12" selection-start-line="166" selection-start-column="12" selection-end-line="166" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/BlurFace/figs/0003.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/BlurFace/figs/0000.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/sample_generator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tracking/gen_config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="38" column="21" selection-start-line="38" selection-start-column="21" selection-end-line="38" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0359.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0361.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0362.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0364.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0367.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0384.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0405.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0447.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0426.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/O3k67-pv7kA+1+0.mp4/figs/0000.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/Basketball/result.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-64827" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/aYVEZrX4mE0+8+0.mp4/result.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-44577" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/7AfzAFr2VXQ+15+0.mp4/result.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-35435" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/JraRkiPqRVk+5+1.mp4/result.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-14085" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tracking/run_tracker.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="316" column="79" selection-start-line="316" selection-start-column="79" selection-end-line="316" selection-end-column="79" />
+        <state relative-caret-position="441">
+          <caret line="447" selection-start-line="447" selection-end-line="447" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
